@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service;
 import PO.StockCurrentData;
 import dao.DaoImpl;
 import net.sf.json.JSONArray;
+/**
+ * @author 凡
+ * 解析界面
+ */
 @Service
 @Scope("prototype")
 public class SpiderRunnable extends TimerTask{

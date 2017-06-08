@@ -2,7 +2,6 @@ package dao;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -14,6 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import PO.StockCurrentData;
 
+/**
+ * @author 凡
+ * 数据层
+ */
 @Component
 //@Scope("prototype")
 public class DaoImpl {
