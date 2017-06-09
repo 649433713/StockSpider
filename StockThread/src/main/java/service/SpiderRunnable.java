@@ -46,11 +46,12 @@ public class SpiderRunnable extends TimerTask{
 			break;
 		}
 		userAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36 OPR/45.0.2552.812";
-		reconnectTime = second/5;	
+		reconnectTime = second/6;	
 		failedTime = 0;
 	}
 	@Override
 	public void run() {
+		failedTime = 0;
 		Calendar calendar = Calendar.getInstance();
 		Calendar start = Calendar.getInstance();
 		start.set(Calendar.HOUR_OF_DAY, 9);
@@ -63,26 +64,36 @@ public class SpiderRunnable extends TimerTask{
 			//return;
 		}
 		System.out.println(new Date()+"===========thread "+ i +" start===========");
+		spide();
+		
+	}
 
+	public void spide(){
 		Document document = null;
-	
+		
 		try {
 			document = Jsoup.connect(url).header("User-Agent",userAgent).timeout(5000).get();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("连接超时");
 			failedTime++;
 			if (failedTime<reconnectTime) {
-				run();
+				System.out.println("第"+failedTime+"次重连");
+				spide();
+			}else{
+				System.out.println("放弃连接");
+				return;
 			}
 		}
 
 		if (document==null||document.body()==null) {
+			System.out.println("连接超时");
 			failedTime++;
 			if (failedTime<reconnectTime) {
-				run();
-			}
-			else{
+				System.out.println("第"+failedTime+"次重连");
+				spide();
+			}else{
+				System.out.println("放弃连接");
 				return;
 			}
 		}
@@ -104,6 +115,5 @@ public class SpiderRunnable extends TimerTask{
 		//daoImpl.updateByJDBC((List<StockCurrentData>)temp);
 	
 	}
-
 		
 }
