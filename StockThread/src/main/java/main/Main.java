@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
+import service.CreateTable;
 import service.SpiderRunnable;
 import service.SpiderTimerTask;
 
@@ -55,9 +56,16 @@ public class Main {
 		}
 		
 		int second = Integer.parseInt((String)properties.get("period"));
-		for (int i = 1; i < 35; i++) {
-			Thread thread = new Thread(new SpiderTimerTask(applicationContext.getBean(SpiderRunnable.class, i),second));
-			thread.start();
+		int createOrUpdate =  Integer.parseInt(((String)properties.get("createOrUpdate")).trim());
+		//创建表
+		if(createOrUpdate == 1){
+			applicationContext.getBean(CreateTable.class).create();
+		}else{
+			for (int i = 1; i < 35; i++) {
+				Thread thread = new Thread(new SpiderTimerTask(applicationContext.getBean(SpiderRunnable.class, i,second),second));
+				thread.start();
+			}
 		}
+		
 	}
 }

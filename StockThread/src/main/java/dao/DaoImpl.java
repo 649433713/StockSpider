@@ -2,8 +2,10 @@ package dao;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -14,21 +16,60 @@ import org.springframework.transaction.annotation.Transactional;
 import PO.StockCurrentData;
 
 /**
- * @author 凡
- * 数据层
+ * @author 凡 数据层
  */
 @Component
-//@Scope("prototype")
+// @Scope("prototype")
 public class DaoImpl {
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-	
-	public static List<StockCurrentData> result;
-	
+
+	public static Map<String, StockCurrentData> result;
+
 	@Transactional("JDBC")
 	public void updateByJDBC() {
-		List<StockCurrentData> temp = DaoImpl.result;
+		List<StockCurrentData> temp = new ArrayList<>(result.values());
+		String updateSql = "UPDATE `stock_current_data` set `changepercent`=?,"
+				+ "`trade`=?,`open`=?,`high`=?,`low`=?,`settlement`=?,`volume`=?,"
+				+ "`turnoverratio`=?,`amount`=?,`per`=?,`pb`=?,`mktcap`=?,`nmc`=?," + "`date`=? where code =?";
+		jdbcTemplate.batchUpdate(updateSql, new BatchPreparedStatementSetter() {
+
+			@Override
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
+
+				ps.setDouble(1, temp.get(i).getChangepercent());
+				ps.setDouble(2, temp.get(i).getTrade());
+				ps.setDouble(3, temp.get(i).getOpen());
+				ps.setDouble(4, temp.get(i).getHigh());
+				ps.setDouble(5, temp.get(i).getLow());
+				ps.setDouble(6, temp.get(i).getSettlement());
+				ps.setLong(7, temp.get(i).getVolume());
+				ps.setDouble(8, temp.get(i).getTurnoverratio());
+				ps.setLong(9, temp.get(i).getAmount());
+				ps.setDouble(10, temp.get(i).getPer());
+				ps.setDouble(11, temp.get(i).getPb());
+				ps.setDouble(12, temp.get(i).getMktcap());
+				ps.setDouble(13, temp.get(i).getNmc());
+				ps.setDate(14, new java.sql.Date(new Date().getTime()));
+				ps.setString(15, temp.get(i).getCode());
+
+			}
+
+			@Override
+			public int getBatchSize() {
+				return temp.size();
+			}
+		});
+		System.out.println(DaoImpl.result.size());
+		DaoImpl.result.clear();
+
+		System.out.println(new Date() + "===========finish===========");
+
+	}
+
+	@Transactional("JDBC")
+	public void creatByJDBC(List<StockCurrentData> temp ) {
 		String selectSql = "select count(*) from information_schema.TABLES where TABLE_NAME = 'stock_current_data'";
 		int num = jdbcTemplate.queryForObject(selectSql, int.class);
 		if (num == 0) {
@@ -44,9 +85,9 @@ public class DaoImpl {
 			String insertSql = "INSERT INTO `stock_current_data`(`code`,`name`,`date`,`changepercent`,`trade`,`open`,`high`,`low`,"
 					+ "`settlement`,`volume`,`turnoverratio`,`amount`,`per`,`pb`,`mktcap`,`nmc`)VALUES"
 					+ "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-			
+
 			jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
-				
+
 				@Override
 				public void setValues(PreparedStatement ps, int i) throws SQLException {
 					ps.setString(1, temp.get(i).getCode());
@@ -65,59 +106,23 @@ public class DaoImpl {
 					ps.setDouble(14, temp.get(i).getPb());
 					ps.setDouble(15, temp.get(i).getMktcap());
 					ps.setDouble(16, temp.get(i).getNmc());
-					
-				
-				}
-				
-				@Override
-				public int getBatchSize() {
-					
-					return temp.size();
-				}
-			});
-			System.out.println(DaoImpl.result.size());
-			DaoImpl.result.clear();
-			
-			System.out.println(new Date() + "===========finish===========");
-		}else{
-			String updateSql = "UPDATE `stock_current_data` set `changepercent`=?,"
-					+ "`trade`=?,`open`=?,`high`=?,`low`=?,`settlement`=?,`volume`=?,"
-					+ "`turnoverratio`=?,`amount`=?,`per`=?,`pb`=?,`mktcap`=?,`nmc`=?,"
-					+ "`date`=? where code =?";
-			jdbcTemplate.batchUpdate(updateSql, new BatchPreparedStatementSetter() {
-				
-				@Override
-				public void setValues(PreparedStatement ps, int i) throws SQLException {
 
-					ps.setDouble(1, temp.get(i).getChangepercent());
-					ps.setDouble(2, temp.get(i).getTrade());
-					ps.setDouble(3, temp.get(i).getOpen());
-					ps.setDouble(4, temp.get(i).getHigh());
-					ps.setDouble(5, temp.get(i).getLow());
-					ps.setDouble(6, temp.get(i).getSettlement());
-					ps.setLong(7, temp.get(i).getVolume());
-					ps.setDouble(8, temp.get(i).getTurnoverratio());
-					ps.setLong(9, temp.get(i).getAmount());
-					ps.setDouble(10, temp.get(i).getPer());
-					ps.setDouble(11, temp.get(i).getPb());
-					ps.setDouble(12, temp.get(i).getMktcap());
-					ps.setDouble(13, temp.get(i).getNmc());
-					ps.setDate(14, new java.sql.Date(new Date().getTime()));
-					ps.setString(15, temp.get(i).getCode());
-					
 				}
-				
+
 				@Override
 				public int getBatchSize() {
+
 					return temp.size();
 				}
 			});
 			System.out.println(DaoImpl.result.size());
 			DaoImpl.result.clear();
-			
+
 			System.out.println(new Date() + "===========finish===========");
 		}
-		
+		else{
+			System.out.println("表已存在");
+		}
 	}
 
 }

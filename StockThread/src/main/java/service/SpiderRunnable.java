@@ -1,10 +1,11 @@
 package service;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.TimerTask;
+import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -28,8 +29,10 @@ public class SpiderRunnable extends TimerTask{
 	private String url ;
 	private String userAgent ;
 	private int i;
+	private int reconnectTime;
 
-	public SpiderRunnable(int i) {
+	private int failedTime;
+	public SpiderRunnable(int i,int second) {
 		this.i = i;
 		switch (i) {
 		case 33:
@@ -42,8 +45,9 @@ public class SpiderRunnable extends TimerTask{
 			url = "http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?num=100&node=hs_a&page="+i;
 			break;
 		}
-			userAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36 OPR/45.0.2552.812";
-
+		userAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36 OPR/45.0.2552.812";
+		reconnectTime = second/5;	
+		failedTime = 0;
 	}
 	@Override
 	public void run() {
@@ -64,24 +68,36 @@ public class SpiderRunnable extends TimerTask{
 	
 		try {
 			document = Jsoup.connect(url).header("User-Agent",userAgent).timeout(5000).get();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			run();
+			failedTime++;
+			if (failedTime<reconnectTime) {
+				run();
+			}
 		}
 
 		if (document==null||document.body()==null) {
-			run();
+			failedTime++;
+			if (failedTime<reconnectTime) {
+				run();
+			}
+			else{
+				return;
+			}
 		}
 		
 		String jsonstr = document.body().text();
 		JSONArray jsonArray = JSONArray.fromObject(jsonstr);
 		Collection<StockCurrentData> temp = JSONArray.toCollection(jsonArray, StockCurrentData.class);
 		if (DaoImpl.result==null) {
-			DaoImpl.result = new ArrayList<>();
+			DaoImpl.result =  new LinkedHashMap<>() ;
 		}
-		DaoImpl.result.addAll(temp);
-		if (DaoImpl.result.size()>3300) {
+		if (DaoImpl.result.size()<3300) {
+			Map<String, StockCurrentData> map = temp.stream().collect(Collectors.toMap(StockCurrentData::getCode,(p)->p ));
+			DaoImpl.result.putAll(map);
+		}
+		if (DaoImpl.result.size()>3300&&DaoImpl.result.size()<3400) {
 			daoImpl.updateByJDBC();
 		}
 	
