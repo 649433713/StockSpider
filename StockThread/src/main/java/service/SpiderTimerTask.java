@@ -13,16 +13,18 @@ public class SpiderTimerTask implements Runnable{
 
 	
 	private SpiderRunnable spiderRunnable;
+	private int second;
 	
-	public SpiderTimerTask(SpiderRunnable bean) {
+	public SpiderTimerTask(SpiderRunnable bean,int second) {
 		spiderRunnable = bean;
+		this.second = second;
 	}
 
 	@Override
 	public void run() {
 		Timer timer = new Timer();
 		
-		//每隔10s更新一次
-		timer.scheduleAtFixedRate(spiderRunnable, 0, 10000); 
+		//每隔second更新一次
+		timer.scheduleAtFixedRate(spiderRunnable, 0, second*1000); 
 	}
 }
