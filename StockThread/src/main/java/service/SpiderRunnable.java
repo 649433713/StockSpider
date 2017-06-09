@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.TimerTask;
 
 import org.jsoup.Jsoup;
@@ -26,8 +27,10 @@ public class SpiderRunnable extends TimerTask{
 	private DaoImpl daoImpl;
 	private String url ;
 	private String userAgent ;
+	private int i;
 
 	public SpiderRunnable(int i) {
+		this.i = i;
 		switch (i) {
 		case 33:
 			url = "http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?num=100&node=hs_b";
@@ -55,7 +58,7 @@ public class SpiderRunnable extends TimerTask{
 		if (calendar.before(start)||calendar.after(end)) {
 			//return;
 		}
-		System.out.println(Calendar.getInstance().getTime());
+		System.out.println(new Date()+"===========thread "+ i +" start===========");
 
 		Document document = null;
 	
@@ -64,8 +67,13 @@ public class SpiderRunnable extends TimerTask{
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			run();
 		}
 
+		if (document==null||document.body()==null) {
+			run();
+		}
+		
 		String jsonstr = document.body().text();
 		JSONArray jsonArray = JSONArray.fromObject(jsonstr);
 		Collection<StockCurrentData> temp = JSONArray.toCollection(jsonArray, StockCurrentData.class);
@@ -79,7 +87,6 @@ public class SpiderRunnable extends TimerTask{
 	
 		//daoImpl.updateByJDBC((List<StockCurrentData>)temp);
 	
-		System.out.println(Calendar.getInstance().getTime());
 	}
 
 		

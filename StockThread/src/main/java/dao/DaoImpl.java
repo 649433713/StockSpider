@@ -60,9 +60,10 @@ public class DaoImpl {
 				return temp.size();
 			}
 		});
-		
+		System.out.println(DaoImpl.result.size());
 		DaoImpl.result.clear();
-		System.out.println(new Date() + "=========finish===========");
+		
+		System.out.println(new Date() + "===========finish===========");
 	}
 
 }

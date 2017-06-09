@@ -22,7 +22,7 @@
 		<property name ="password" value="${password}"></property>
 		<property name ="driverClass" value="${driverClass}"></property>
 		<!-- <property name ="jdbcUrl" value="${proquantUrl}"></property> -->
-		<property name ="jdbcUrl" value="${jdbcUrl3}"></property>
+		<property name ="jdbcUrl" value="${jdbcUrl}"></property>
 		
 		<property name ="maxPoolSize" value="${maxPoolSize}"></property>
 		<property name ="initialPoolSize" value="${initPoolSize}"></property>
